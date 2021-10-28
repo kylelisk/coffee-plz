@@ -1,1 +1,1 @@
-# simple-api-funz
+# coffee-plz

@@ -1,6 +1,6 @@
 FROM node:12.12.0-alpine
 
-ENV PORT 3000
+ENV PORT 8080
 
 COPY package.json package.json
 RUN npm install
@@ -8,7 +8,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["node", "dist/"]
 

@@ -53,8 +53,8 @@ resource "aws_ecs_task_definition" "coffee_plz_definition" {
       },
       "portMappings": [
         {
-          "containerPort": 3000,
-          "hostPort": 80
+          "containerPort": 8080,
+          "hostPort": 8080
         }
       ],
       "cpu": 256,

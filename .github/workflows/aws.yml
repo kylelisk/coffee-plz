@@ -36,7 +36,7 @@ on:
 
 env:
   AWS_REGION: ca-central-1                    # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: coffee-plz                  # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: coffee-plz-ecr              # set this to your Amazon ECR repository name
   ECS_SERVICE: coffee-plz-service             # set this to your Amazon ECS service name
   ECS_CLUSTER: coffee-plz-cluser              # set this to your Amazon ECS cluster name
   ECS_TASK_DEFINITION: coffee-plz-task-def    # set this to the path to your Amazon ECS task definition

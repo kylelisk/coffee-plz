@@ -28,7 +28,7 @@ resource "aws_lb_listener" "coffee_plz_listener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.id
+    target_group_arn = aws_lb_target_group.coffee_plz_tg.id
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_ecs_task_definition" "coffee_plz_definition" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "${data.terraform_remote_state.foundation.outputs.aws_cloudwatch_log_group_id}",
-          "awslogs-region": "${var.aws_region}",
+          "awslogs-region": "${var.region}",
           "awslogs-stream-prefix": "${var.environment}"
         }
       },
@@ -77,7 +77,7 @@ resource "aws_ecs_task_definition" "coffee_plz_definition" {
   }
 }
 
-resource "aws_ecs_service" "aws-ecs-service" {
+resource "aws_ecs_service" "coffee_plz_svc" {
   name                 = "${var.environment}-ecs-service"
   cluster              = data.terraform_remote_state.foundation.outputs.aws_ecs_cluster_id
   task_definition      = aws_ecs_task_definition.coffee_plz_definition.arn
@@ -87,7 +87,7 @@ resource "aws_ecs_service" "aws-ecs-service" {
   force_new_deployment = true
 
   network_configuration {
-    subnets          = data.terraform_remote_state.foundation.outputs.private_subnet_ids
+    subnets          = data.terraform_remote_state.foundation.outputs.private_subnet_ids.*
     assign_public_ip = false
     security_groups = [
       aws_security_group.service_security_group.id,

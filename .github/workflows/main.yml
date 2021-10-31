@@ -77,6 +77,7 @@ jobs:
   foundation:
     name: CoffeePlz Terraform Foundation Stack
     runs-on: ubuntu-latest
+    environment: CoffeePlz-AWS
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -123,6 +124,7 @@ jobs:
   services:
     name: CoffeePlz Terraform Services Stack
     runs-on: ubuntu-latest
+    environment: CoffeePlz-AWS
     steps:
     - name: Checkout
       uses: actions/checkout@v2

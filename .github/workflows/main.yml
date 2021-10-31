@@ -99,6 +99,7 @@ jobs:
     - name: Terraform fmt
       id: fmt
       run: terraform fmt -recursive
+      working-directory: ${{ env.working-directory }}
       env:
         AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -114,22 +115,24 @@ jobs:
     - name: Terraform Validate
       id: validate
       run: terraform validate -no-color
+      working-directory: ${{ env.working-directory }}
       env:
         AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    # - name: Terraform Apply
-    #   run: terraform apply -auto-approve
-    #   env:
-    #     TF_ACTION_WORKING_DIR: './terraform/foundation'
-    #     AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ${{ env.working-directory }}
+      env:
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   # ===========================================
   # Terraform Services Stack Testing/Deploy
   # ===========================================
   services:
     name: CoffeePlz Terraform Services Stack
+    needs: [build]
     runs-on: ubuntu-latest
     env:
       working-directory: terraform/services
@@ -153,6 +156,7 @@ jobs:
     - name: Terraform fmt
       id: fmt
       run: terraform fmt -recursive
+      working-directory: ${{ env.working-directory }}
       env:
         AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -168,13 +172,14 @@ jobs:
     - name: Terraform Validate
       id: validate
       run: terraform validate -no-color
+      working-directory: ${{ env.working-directory }}
       env:
         AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    # - name: Terraform Apply
-    #   run: terraform apply -auto-approve
-    #   env:
-    #     TF_ACTION_WORKING_DIR: './terraform/services'
-    #     AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ${{ env.working-directory }}
+      env:
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}

@@ -1,0 +1,168 @@
+name: Build and Deploy to Amazon ECS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: ca-central-1                    # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: coffee-plz-ecr              # set this to your Amazon ECR repository name
+  ECS_SERVICE: coffee-plz-service             # set this to your Amazon ECS service name
+  ECS_CLUSTER: coffee-plz-cluser              # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: coffee-plz-task-def    # set this to the path to your Amazon ECS task definition
+                                              # file, e.g. .aws/task-definition.json
+  CONTAINER_NAME: coffee-plz                  # set this to the name of the container in the
+                                              # containerDefinitions section of your task definition
+
+jobs:
+  # ===========================================
+  # Lint/Testing the node app
+  # ===========================================
+  lint-test:
+    name: Lint & Test CoffeePlz
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm run test
+
+      - name: Run Linter
+        run: npm run lint
+
+  # ===========================================
+  # Building/Pushing the node app
+  # ===========================================
+  build:
+    name: Build CoffeePlz
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build a docker container and
+        # push it to ECR so that it can
+        # be deployed to ECS.
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+  # ===========================================
+  # Terraform Foundation Stack Testing/Deploy
+  # ===========================================
+  foundation:
+    name: CoffeePlz Terraform Foundation Stack
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Terraform Setup
+      uses: hashicorp/setup-terraform@v1.1.0
+      with:
+        terraform_version: 0.15.3
+
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -recursive
+      env:
+        TF_ACTION_WORKING_DIR: './terraform/foundation'
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform Init
+      id: init
+      run: terraform init -no-color
+      env:
+        TF_ACTION_WORKING_DIR: './terraform/foundation'
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+      env:
+        TF_ACTION_WORKING_DIR: './terraform/foundation'
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    # - name: Terraform Apply
+    #   run: terraform apply -auto-approve
+    #   env:
+    #     TF_ACTION_WORKING_DIR: './terraform/foundation'
+    #     AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  # ===========================================
+  # Terraform Services Stack Testing/Deploy
+  # ===========================================
+  services:
+    name: CoffeePlz Terraform Services Stack
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Terraform Setup
+      uses: hashicorp/setup-terraform@v1.1.0
+      with:
+        terraform_version: 0.15.3
+
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -recursive
+      env:
+        TF_ACTION_WORKING_DIR: './terraform/services'
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform Init
+      id: init
+      run: terraform init -no-color
+      env:
+        TF_ACTION_WORKING_DIR: './terraform/services'
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+      env:
+        TF_ACTION_WORKING_DIR: './terraform/services'
+        AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    # - name: Terraform Apply
+    #   run: terraform apply -auto-approve
+    #   env:
+    #     TF_ACTION_WORKING_DIR: './terraform/services'
+    #     AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}

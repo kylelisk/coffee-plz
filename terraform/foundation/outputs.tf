@@ -15,7 +15,7 @@ output "aws_cloudwatch_log_group_id" {
 }
 
 output "ecs_task_execution_role_arn" {
-  value = aws_iam_role.fargate_role.arn
+  value = aws_iam_role.ecs_task_exec_role.arn
 }
 
 output "private_subnet_ids" {

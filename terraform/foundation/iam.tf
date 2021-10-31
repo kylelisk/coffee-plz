@@ -1,86 +1,28 @@
 # iam.tf - All the fun IAM stuffs
 
-resource "aws_iam_role" "fargate_role" {
-  name                = "${var.environment}-fargate-role"
-  managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy", ]
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      },
-    ]
-  })
+# ECS task execution role data
+data "aws_iam_policy_document" "ecs_task_exec_role" {
+  version = "2012-10-17"
+  statement {
+    sid     = ""
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
 
-  inline_policy {
-    name   = "core_ecs_policy_attachment"
-    policy = data.aws_iam_policy_document.coffee_policy_doc.json
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
   }
 }
 
-data "aws_iam_policy_document" "coffee_policy_doc" {
-  statement {
-    actions = [
-      "states:DescribeStateMachine",
-      "states:StartExecution",
-      "states:ListExecutions",
-      "states:DescribeExecution",
-      "states:StopExecution",
+# ECS task execution role
+resource "aws_iam_role" "ecs_task_exec_role" {
+  name               = "${var.environment}-task-exec-task-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_exec_role.json
+}
 
-      "lambda:ListFunctions",
-      "lambda:GetFunction",
-      "lambda:ListAliases",
-      "lambda:InvokeFunction",
-
-      "events:PutTargets", # Required for step functions with Fargate.
-      "events:PutRule",
-      "events:DescribeRule",
-
-      "ecs:DescribeContainerInstances",
-      "ecs:DescribeTasks",
-      "ecs:ListTasks",
-      "ecs:ListTaskDefinitionFamilies",
-      "ecs:StartTask",
-      "ecs:StopTask",
-      "ecs:RunTask",
-      "ecs:ListServices",
-      "ecs:UpdateService",
-      "ec2:DescribeInstances",
-
-      "sqs:ReceiveMessage",
-      "sqs:SendMessage",
-      "sqs:DeleteMessage",
-      "sqs:GetQueueAttributes",
-      "sqs:ListQueues",
-      "sqs:PurgeQueue",
-      "sns:Publish",
-      "sns:ConfirmSubscription",
-
-      "iam:PassRole",
-
-      "firehose:PutRecord",
-
-      "s3:AbortMultipartUpload",
-      "s3:DeleteObject",
-      "s3:DeleteObjectVersion",
-      "s3:GetObject",
-      "s3:ListBucket",
-      "s3:ListBucketVersions",
-      "s3:ListBucketMultipartUploads",
-      "s3:ListMultipartUploadParts",
-      "s3:PutObject",
-      "s3:PutObjectAcl",
-      "ssm:GetParameter",
-      "ssm:GetParameters",
-      "ssm:GetParametersByPath",
-
-      "translate:TranslateText",
-    ]
-    resources = ["*"]
-  }
+# ECS task execution role policy attachment
+resource "aws_iam_role_policy_attachment" "ecs_task_exec_role" {
+  role       = aws_iam_role.ecs_task_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }

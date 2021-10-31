@@ -6,13 +6,9 @@ resource "aws_lb_target_group" "coffee_plz_tg" {
   vpc_id      = data.terraform_remote_state.foundation.outputs.vpc_id
 
   health_check {
-    healthy_threshold   = "3"
-    interval            = "300"
-    protocol            = "HTTP"
-    matcher             = "200"
-    timeout             = "3"
-    path                = "/"
-    unhealthy_threshold = "2"
+    protocol = "HTTP"
+    matcher  = "200"
+    path     = "/"
   }
 
   tags = {
@@ -80,7 +76,7 @@ resource "aws_ecs_task_definition" "coffee_plz_definition" {
 resource "aws_ecs_service" "coffee_plz_svc" {
   name                 = "${var.environment}-ecs-service"
   cluster              = data.terraform_remote_state.foundation.outputs.aws_ecs_cluster_id
-  task_definition      = aws_ecs_task_definition.coffee_plz_definition.arn
+  task_definition      = "${aws_ecs_task_definition.coffee_plz_definition.family}:${max(aws_ecs_task_definition.coffee_plz_definition.revision, data.aws_ecs_task_definition.main.revision)}"
   launch_type          = "FARGATE"
   scheduling_strategy  = "REPLICA"
   desired_count        = 1

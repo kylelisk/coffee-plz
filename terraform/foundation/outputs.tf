@@ -30,6 +30,10 @@ output "application_load_balancer_id" {
   value = aws_alb.application_load_balancer.id
 }
 
+output "application_load_balancer_arn_suffix" {
+  value = aws_alb.application_load_balancer.arn_suffix
+}
+
 output "vpc_id" {
   value = aws_vpc.vpc.id
 }

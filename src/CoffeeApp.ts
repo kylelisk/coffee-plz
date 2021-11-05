@@ -12,7 +12,7 @@ class App {
         const router = express.Router()
         router.get('/', (req, res) => {
             res.json({
-                message: 'Have a Coffee! You deserve it. ☕'
+                message: 'Have a Bubble tea! You deserve it. ☕'
             })
         })
         this.express.use('/', router)

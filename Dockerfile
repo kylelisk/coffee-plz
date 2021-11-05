@@ -1,12 +1,12 @@
-FROM node:12.12.0-alpine
+FROM node:16.11.1-alpine
 
 ENV PORT 8080
 
 COPY package.json package.json
-RUN npm install
+RUN yarn
 
 COPY . .
-RUN npm run build
+RUN yarn build
 
 EXPOSE 8080
 

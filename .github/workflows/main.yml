@@ -23,16 +23,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Install Node.js dependencies
-        run: npm install
+        run: yarn
 
       - name: Run Tests
-        run: npm run test
+        run: yarn test
 
       - name: Run Linter
-        run: npm run lint
+        run: yarn lint
 
   # ===========================================
   # Building/Pushing the node app

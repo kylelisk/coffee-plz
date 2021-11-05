@@ -17,12 +17,12 @@ Then to run it:
 ```docker run -itd -p 8080:8080 <imageID>```
 
 ## To run the linting:
-```npm run lint```
+```yarn lint```
 
 ## To test the node app:
-```npm run test```
+```yarn test```
 
 ## To build the app:
-```npm run build```
+```yarn build```
 
 This will output to the `dist/` folder
